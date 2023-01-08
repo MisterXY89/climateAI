@@ -6,8 +6,6 @@ https://github.com/joyfang1106/RLANet
 https://stackoverflow.com/questions/22431676/neural-networks-in-realtime
 """
 
-import shap
-
 import numpy as np
 import pandas as pd
 
@@ -68,18 +66,29 @@ class NeuralNet(object):
 
         if save: self.model.save('saved_models/nn.model')
 
+    def __get_train_subset():
+        pass
+
     def find_best_parameters(self, X, y):
-        explainer = shap.DeepExplainer(self.model, X)
-        shap_values = explainer.shap_values(X)
+        # **sk_params
+        sk_wrapper_model = KerasRegressor(build_fn = self.get_model())
+        sk_wrapper_model.fit(X,y)
+
+        perm = PermutationImportance(sk_wrapper_model, random_state = SEED).fit(X,y)
+        eli5.show_weights(perm, feature_names = X.columns.tolist())
 
     def get_model(self):
         model = tf.keras.Sequential()
 
         # Defining the Input layer and FIRST hidden layer, both are same!
         model.add(Dense(units=self.units/2, input_dim=self.input_dim, kernel_initializer=self.kernel_initializer, activation='relu'))
-
-        # Defining the Second layer of the model
-        # after the first layer we don't have to specify input_dim as keras configure it automatically
+        
+        model.add(Dense(units=self.units, kernel_initializer=self.kernel_initializer, activation='tanh'))
+        model.add(Dense(units=self.units, kernel_initializer=self.kernel_initializer, activation='tanh'))
+        model.add(Dense(units=self.units, kernel_initializer=self.kernel_initializer, activation='tanh'))
+        model.add(Dense(units=self.units, kernel_initializer=self.kernel_initializer, activation='tanh'))
+        model.add(Dense(units=self.units, kernel_initializer=self.kernel_initializer, activation='tanh'))
+        model.add(Dense(units=self.units, kernel_initializer=self.kernel_initializer, activation='tanh'))
         model.add(Dense(units=self.units, kernel_initializer=self.kernel_initializer, activation='tanh'))
         model.add(Dense(units=self.units, kernel_initializer=self.kernel_initializer, activation='tanh'))
 
