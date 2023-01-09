@@ -72,6 +72,14 @@ class NeuralNet(object):
         explainer = shap.DeepExplainer(self.model, X)
         shap_values = explainer.shap_values(X)
 
+
+    def load_model(self):
+        try:
+            self.model = tf.keras.models.load_model('saved_models/nn.model')
+            return True
+        except Exception as e:
+            return False
+
     def get_model(self):
         model = tf.keras.Sequential()
 
