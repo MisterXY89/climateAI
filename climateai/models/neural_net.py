@@ -36,7 +36,7 @@ class NeuralNet(object):
         # This is also known as mini-batch gradient descent. 
         # the bigger the number -> underfitting, smaller -> overfitting
         self.batch_size = 15
-        self.epochs = 70
+        self.epochs = 60
         self.model = self.get_model()
 
     def __init_data(self, X, y):
