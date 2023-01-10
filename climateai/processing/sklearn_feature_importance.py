@@ -18,6 +18,8 @@ def plot_sk_feature_importance(sk_model, X):
     feature_names = X.columns[sorted_idx]
 
     # Create a bar plot of the feature importances
-    plt.bar(range(X.shape[1]), ft_importances[sorted_idx])
+    plt.bar(range(X.shape[1]), ft_importances[sorted_idx], 
+        color = "#0097a7"
+    )
     plt.xticks(range(X.shape[1]), feature_names, rotation=90)
     plt.show()
