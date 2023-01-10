@@ -1,11 +1,9 @@
 """
-@version: 2022.10.30
+@version: 2023.01.10
 @author: Tilman Kerl
-
-https://github.com/joyfang1106/RLANet
-https://stackoverflow.com/questions/22431676/neural-networks-in-realtime
 """
 
+import math
 import shap
 import pickle
 
@@ -75,7 +73,7 @@ class NeuralNet(object):
             self.model.save(f'{self.file_dir}/saved_models/{self.model_name}.model')
 
 
-    def find_best_parameters(self, X, feautures, js=False, force=False):
+    def inspect_feature_importance(self, X, feautures, js=False, force=False):
 
         shap_values = None
         if not force:
@@ -123,9 +121,13 @@ class NeuralNet(object):
         return model
         
 
-    def evaluate(self, X_test, y_test):
-        self.model.summary()
+    def evaluate(self, X_test, y_test, full=False):        
         self.X_test, self.y_test = self.__init_data(X_test, y_test)
-        mse = self.model.evaluate(self.X_test, self.y_test)
-        # print(f' Model loss on the test set: {loss}')
-        print(f' Model MSE on the test set: {mse}')
+        result = self.model.evaluate(self.X_test, self.y_test)
+        rmse_model = math.sqrt(result[0])
+        print("RMSE: ", rmse_model)
+        if full:
+            self.model.summary()
+            print(f'Model performance (MSE, PREC, AUC) on the test set: {result}')
+            return rmse_model, result        
+        return rmse_model

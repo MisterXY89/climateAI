@@ -1,4 +1,6 @@
 
+import math
+
 import numpy as np
 import pandas as pd
 
@@ -38,7 +40,10 @@ class Process(object):
             plot.show()
         
         return X_wins
-       
+
+    @staticmethod
+    def rmse(x):
+        math.sqrt(x)   
 
     @staticmethod
     def split_data(df):
@@ -48,7 +53,9 @@ class Process(object):
         X_train, X_test, y_train, y_test = train_test_split(X, y, 
             test_size = TEST_SIZE, 
             random_state = SEED
-        ) 
+        )
+        X_test = X.tail(len(X_test)) 
+        y_test = y.tail(len(y_test))
         X_wins_train = Process.winsorise(X_train)
         X_wins_test = Process.winsorise(X_test)
         X_scaled_train, X_scaled_test = Process.standardise_data(X_train, X_test)
