@@ -20,7 +20,7 @@ class DataLoader(object):
     def get_random_files(self, base=True):
         all_files = glob.glob(f"{self.data_path}/*.csv")
         if base:
-            return all_files[:10]
+            return all_files[:100]
         shuffled_files = np.random.shuffle(all_files)
         return shuffled_files
         

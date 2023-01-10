@@ -7,6 +7,9 @@ https://stackoverflow.com/questions/22431676/neural-networks-in-realtime
 """
 
 import shap
+import pickle
+
+import pathlib
 
 import numpy as np
 import pandas as pd
@@ -28,7 +31,8 @@ from climateai.config import *
 
 class NeuralNet(object):
 
-    def __init__(self, dim = 24):
+    def __init__(self, dim = 24, model_name="nn"):
+        self.file_dir = str(pathlib.Path(__file__).parent.resolve())
         self.input_dim = dim # len(self.columns)
         self.units = self.input_dim * 2
         self.kernel_initializer = "normal"
@@ -37,6 +41,7 @@ class NeuralNet(object):
         # the bigger the number -> underfitting, smaller -> overfitting
         self.batch_size = 15
         self.epochs = 60
+        self.model_name = model_name
         self.model = self.get_model()
 
     def __init_data(self, X, y):
@@ -51,7 +56,7 @@ class NeuralNet(object):
     def train(self, X_train, y_train, save=True):
         self.X_train, self.y_train = self.__init_data(X_train, y_train)        
         self.model.compile(
-            loss = 'mean_squared_error',             
+            loss = 'mean_squared_error',
             optimizer = 'adam',
             # optimizer = 'rmsprop',
             metrics = ["Precision", "AUC"]
@@ -66,18 +71,38 @@ class NeuralNet(object):
             # validation_data =
         )
 
-        if save: self.model.save('saved_models/nn.model')
+        if save: 
+            self.model.save(f'{self.file_dir}/saved_models/{self.model_name}.model')
 
-    def find_best_parameters(self, X, y):
-        explainer = shap.DeepExplainer(self.model, X)
-        shap_values = explainer.shap_values(X)
+
+    def find_best_parameters(self, X, feautures, js=False, force=False):
+
+        shap_values = None
+        if not force:
+            try:
+                with open(f"{self.file_dir}/shap-values-{self.model_name}.pk", "rb") as fi:
+                    shap_values = pickle.load(fi)
+            except Exception as e:
+                print(e)
+
+        if not shap_values:
+            idx = np.random.randint(X.shape[0], size=500)
+            shap_value_subset = X[idx,:]
+            explainer = shap.DeepExplainer(self.model, shap_value_subset)
+            shap_values = explainer.shap_values(shap_value_subset)
+            with open(f"{self.file_dir}/shap-values-{self.model_name}.pk", "wb") as fi:
+                pickle.dump(shap_values, fi)
+                    
+        shap.summary_plot(shap_values, plot_type="bar", features = feautures)
+      
 
 
     def load_model(self):
         try:
-            self.model = tf.keras.models.load_model('saved_models/nn.model')
+            self.model = tf.keras.models.load_model(f'{self.file_dir}/saved_models/{self.model_name}.model')
             return True
         except Exception as e:
+            print(e)
             return False
 
     def get_model(self):
@@ -89,7 +114,7 @@ class NeuralNet(object):
         # Defining the Second layer of the model
         # after the first layer we don't have to specify input_dim as keras configure it automatically
         model.add(Dense(units=self.units, kernel_initializer=self.kernel_initializer, activation='tanh'))
-        model.add(Dense(units=self.units, kernel_initializer=self.kernel_initializer, activation='tanh'))
+        # model.add(Dense(units=self.units, kernel_initializer=self.kernel_initializer, activation='tanh'))
 
         # The output neuron is a single fully connected node 
         # Since we will be predicting a single number
